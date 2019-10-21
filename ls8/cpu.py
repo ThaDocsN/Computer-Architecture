@@ -9,6 +9,8 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0]*256
         self.reg = [0]*8
+        self.sp = 7
+        self.pc = 0
 
     def ram_read(self, address):
         return self.ram[address]
@@ -80,28 +82,53 @@ class CPU:
 
         print()
 
+    def push(self, reg):
+        val = self.reg[reg]
+        self.reg[self.sp] -= 1
+        self.ram[self.reg[self.sp]] = val
+        self.pc += 2
+
+    def pop(self, reg):
+        val = self.ram[self.reg[self.sp]]
+        self.reg[reg] = val
+        self.reg[self.sp] += 1
+        self.pc += 2
+
     def run(self):
         """Run the CPU."""
-        pc = 0
         running = True
 
         while running:
-            command = self.ram[pc]
-            reg_a = self.ram[pc + 1]
-            reg_b = self.ram[pc + 2]
+            command = self.ram[self.pc]
+            reg_a = self.ram[self.pc + 1]
+            reg_b = self.ram[self.pc + 2]
 
             if command == 0b10000010:
                 self.reg[reg_a] = reg_b
-                pc += 3
+                self.pc += 3
             elif command == 0b01000111:
                 print(reg_a)
-                pc += 2
+                self.pc += 2
             elif command == 10100010:
                 self.reg[reg_a] *= self.reg[reg_b]
-                pc += 3
+                self.pc += 3
+            elif command == 0b01000101:
+                self.sp -= 1
+                self.ram[self.sp] = self.reg[reg_a]
+                self.pc += 2
+            elif command == 0b01000110:
+                self.reg[reg_a] = self.ram[self.sp]
+                self.sp += 1
+                self.pc += 2
+            elif command == 0b00010001:
+                self.pc = self.ram[self.sp]
+                self.sp += 1
+            elif command == 0b10100000:
+                self.reg[reg_a] += self.reg[reg_b]
+                self.pc += 3
             elif command == 0b00000001:
                 running = False
-                pc += 1
+                self.pc += 1
                 print("Stop")
                 sys.exit(1)
 
