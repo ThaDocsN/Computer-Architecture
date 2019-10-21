@@ -11,6 +11,9 @@ class CPU:
         self.reg = [0]*8
         self.sp = 7
         self.pc = 0
+        self.equal = 0
+        self.greater = 0
+        self.less = 0
 
     def ram_read(self, address):
         return self.ram[address]
@@ -109,7 +112,7 @@ class CPU:
             elif command == 0b01000111:
                 print(reg_a)
                 self.pc += 2
-            elif command == 10100010:
+            elif command == 0b10100010:
                 self.reg[reg_a] *= self.reg[reg_b]
                 self.pc += 3
             elif command == 0b01000101:
@@ -126,6 +129,28 @@ class CPU:
             elif command == 0b10100000:
                 self.reg[reg_a] += self.reg[reg_b]
                 self.pc += 3
+            elif command == 0b10100111:
+                value1 = reg_a
+                value2 = reg_b
+                if value1 == value2:
+                    self.equal = 1
+                elif value1 > value2:
+                    self.greater = 1
+                elif value1 < value2:
+                    self.less = 1
+                self.pc += 3
+            elif command == 0b01010100:
+                self.pc = self.reg[reg_a]
+            elif command == 0b01010101:
+                if self.equal == 1:
+                    self.pc = self.reg[reg_a]
+                else:
+                    self.pc += 2
+            elif command == 0b01010110:
+                if self.equal == 0:
+                    self.pc = self.reg[reg_a]
+                else:
+                    self.pc += 2
             elif command == 0b00000001:
                 running = False
                 self.pc += 1
